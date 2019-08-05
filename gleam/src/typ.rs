@@ -83,7 +83,7 @@ impl Type {
                 .append(retrn.to_gleam_doc(names, uid)),
 
             Type::AnonStruct { elems, .. } => {
-                args_to_gleam_doc(elems, names, uid).surround("{", "}")
+                args_to_gleam_doc(elems, names, uid).surround("struct(", ")")
             }
 
             Type::Map { row } => {
@@ -2926,8 +2926,8 @@ fn infer_test() {
             typ: "List(fn(Int) -> Int)",
         },
         Case {
-            src: "[{[], []}]",
-            typ: "List({List(a), List(b)})",
+            src: "[struct([], [])]",
+            typ: "List(struct(List(a), List(b)))",
         },
         Case {
             src: "[fn(x) { x }, fn(x) { x + 1 }]",
@@ -2969,12 +2969,12 @@ fn infer_test() {
             typ: "struct(Int)",
         },
         Case {
-            src: "(1, 2.0)",
-            typ: "(Int, Float)",
+            src: "struct(1, 2.0)",
+            typ: "struct(Int, Float)",
         },
         Case {
-            src: "(1, 2.0, 3)",
-            typ: "(Int, Float, Int)",
+            src: "struct(1, 2.0, 3)",
+            typ: "struct(Int, Float, Int)",
         },
         Case {
             src: "struct(1, 2.0, struct(1, 1))",
@@ -3044,8 +3044,8 @@ fn infer_test() {
             typ: "fn(a) -> a",
         },
         Case {
-            src: "fn(x) { {1, x} }",
-            typ: "fn(a) -> {Int, a}",
+            src: "fn(x) { struct(1, x) }",
+            typ: "fn(a) -> struct(Int, a)",
         },
         Case {
             src: "let id = fn(x) { x } id(1)",
@@ -3420,9 +3420,9 @@ fn infer_error_test() {
             },
         },
         Case {
-            src: "{1, 2} == {1, 2, 3}",
+            src: "struct(1, 2) == struct(1, 2, 3)",
             error: Error::CouldNotUnify {
-                meta: Meta { start: 10, end: 19 },
+                meta: Meta { start: 16, end: 31 },
                 expected: Type::AnonStruct {
                     elems: vec![int(), int()],
                 },
@@ -3432,7 +3432,7 @@ fn infer_error_test() {
             },
         },
         Case {
-            src: "{} == {a = 2}",
+            src: "{} == struct(a = 2)",
             error: Error::ExtraField {
                 meta: Meta { start: 11, end: 12 },
                 label: "a".to_string(),
