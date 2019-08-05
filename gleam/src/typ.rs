@@ -3143,7 +3143,7 @@ fn infer_test() {
             typ: "Bool",
         },
         Case {
-            src: "struct(a = 1) == struct(a = 2)",
+            src: "{ a = 1 } == { a = 2 }",
             typ: "Bool",
         },
         Case {
@@ -3432,7 +3432,7 @@ fn infer_error_test() {
             },
         },
         Case {
-            src: "{} == struct(a = 2)",
+            src: "{} == {a = 2}",
             error: Error::ExtraField {
                 meta: Meta { start: 11, end: 12 },
                 label: "a".to_string(),
@@ -3530,8 +3530,8 @@ fn infer_module_test() {
             typ: "module { fn run() -> { level = Int } }",
         },
         Case {
-            src: "pub fn ok(x) { {1, x} }",
-            typ: "module { fn ok(a) -> {Int, a} }",
+            src: "pub fn ok(x) { struct(1, x) }",
+            typ: "module { fn ok(a) -> struct(Int, a) }",
         },
         Case {
             src: "pub fn empty() {
@@ -3644,8 +3644,8 @@ fn infer_module_test() {
             typ: "module {  }",
         },
         Case {
-            src: "pub external fn ok(Int) -> {Int, Int} = \"\" \"\"",
-            typ: "module { fn ok(Int) -> {Int, Int} }",
+            src: "pub external fn ok(Int) -> struct(Int, Int) = \"\" \"\"",
+            typ: "module { fn ok(Int) -> struct(Int, Int) }",
         },
         Case {
             src: "pub external fn ok() -> fn(Int) -> Int = \"\" \"\"",
@@ -3664,8 +3664,8 @@ fn infer_module_test() {
             typ: "module { fn go(List(a)) -> a }",
         },
         Case {
-            src: "pub external fn go({a, c}) -> c = \"\" \"\"",
-            typ: "module { fn go({a, b}) -> b }",
+            src: "pub external fn go(struct(a, c)) -> c = \"\" \"\"",
+            typ: "module { fn go(struct(a, b)) -> b }",
         },
         Case {
             src: "pub external fn go() -> module {} = \"\" \"\"",
@@ -3828,6 +3828,7 @@ pub fn two() { one() + zero() }",
     ];
 
     for Case { src, typ } in cases.into_iter() {
+        println!("{}", src);
         let ast = crate::grammar::ModuleParser::new()
             .parse(src)
             .expect("syntax error");
